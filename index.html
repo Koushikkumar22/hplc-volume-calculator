@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HPLC Volume Calculator: Column Volume, Injection Volume & Mobile Phase Needs</title>
+  <meta name="description" content="Free HPLC volume calculator for chromatography labs. Compute column (void) volume, recommended injection volume for isocratic/gradient runs, mobile phase usage, and t0. Detailed guide, FAQs, and best practices." />
+  <meta name="keywords" content="HPLC, volume calculator, column volume, void volume, injection volume, mobile phase, t0, chromatography, LC, analytical chemistry" />
+  <link rel="canonical" href="https://example.com/hplc-volume-calculator" />
+  <meta name="author" content="Your Lab Name" />
+  
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="HPLC Volume Calculator" />
+  <meta property="og:description" content="Compute HPLC column volume (Vm), injection volume limits, mobile phase per run, and t0. Includes in-depth article and FAQs." />
+  <meta property="og:url" content="https://example.com/hplc-volume-calculator" />
+  <meta property="og:image" content="https://example.com/assets/hplc-calculator-cover.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="HPLC Volume Calculator" />
+  <meta name="twitter:description" content="Free, accurate HPLC volume calculator + complete guide." />
+  <meta name="twitter:image" content="https://example.com/assets/hplc-calculator-cover.png" />
+
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --panel: #101722;
+      --panel-2: #0f1a27;
+      --text: #e6edf3;
+      --muted: #9fb3c8;
+      --accent: #66e3ff;
+      --accent-2: #b6f09c;
+      --danger: #ff6b6b;
+      --ok: #14b8a6;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --radius-xl: 18px;
+      --radius-2xl: 24px;
+      --border: 1px solid rgba(255,255,255,0.07);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f7fbff;
+        --panel: #ffffff;
+        --panel-2: #f2f7fd;
+        --text: #16212f;
+        --muted: #496074;
+        --accent: #0ea5e9;
+        --accent-2: #22c55e;
+        --danger: #e11d48;
+        --ok: #059669;
+        --shadow: 0 10px 30px rgba(2, 6, 23, 0.08);
+        --border: 1px solid rgba(2,6,23,0.06);
+      }
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 85% -10%, rgba(102,227,255,0.10), transparent 60%),
+                  radial-gradient(900px 600px at 10% 10%, rgba(182,240,156,0.10), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    header {
+      display: grid;
+      gap: 14px;
+      margin: 24px 0 30px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, rgba(102,227,255,0.2), rgba(182,240,156,0.2));
+      border: var(--border);
+      font-size: 12px;
+      letter-spacing: .4px;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 44px);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .subhead {
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 75ch;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
+    }
+    @media (max-width: 980px){
+      .grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: var(--border);
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+    .card h2 { margin-top: 0; font-size: 22px; letter-spacing: -0.01em; }
+
+    form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 640px){ form .row { grid-template-columns: 1fr; } }
+
+    label { font-weight: 600; font-size: 14px; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+    .field {
+      display: grid; gap: 6px; margin-bottom: 14px;
+    }
+    input[type="number"], select {
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
+      border: var(--border);
+      color: var(--text);
+      font-size: 16px;
+      outline: none;
+    }
+    input::placeholder { color: #8aa1b5; }
+
+    .controls { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+    .btn {
+      appearance: none; border: none; cursor: pointer;
+      padding: 12px 14px; border-radius: 14px; font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: #051016; box-shadow: var(--shadow);
+    }
+    .btn.secondary { background: transparent; color: var(--text); border: var(--border); }
+
+    .out {
+      display: grid; gap: 12px; margin-top: 8px;
+    }
+    .metric {
+      display: grid; grid-template-columns: 1fr auto; align-items: center;
+      background: rgba(255,255,255,0.04);
+      border: var(--border); padding: 12px 14px; border-radius: 14px;
+    }
+    .metric .k { color: var(--muted); font-size: 13px; }
+    .metric .v { font-variant-numeric: tabular-nums; font-weight: 800; }
+    .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: var(--border); }
+
+    .notice { font-size: 13px; color: var(--muted); }
+    .ok { color: var(--ok); }
+    .warn { color: var(--danger); }
+
+    .article {
+      margin-top: 26px;
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: var(--border);
+      border-radius: var(--radius-2xl);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+    .article h2 { font-size: 24px; margin-top: 0; }
+    .article h3 { margin-top: 24px; font-size: 18px; }
+    .article p, .article li { color: var(--text); }
+    .article code { background: rgba(255,255,255,0.07); padding: 2px 6px; border-radius: 8px; }
+
+    details { border: var(--border); border-radius: 14px; padding: 12px 14px; background: rgba(255,255,255,0.04); }
+    details + details { margin-top: 10px; }
+    summary { cursor: pointer; font-weight: 700; }
+
+    footer { margin: 26px 0 50px; font-size: 12px; color: var(--muted); text-align: center; }
+
+    /* Print */
+    @media print { .controls .btn, .badge { display: none; } body { background: #fff; } }
+  </style>
+
+  <!-- Schema.org JSON-LD: TechArticle + FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "HPLC Volume Calculator",
+    "description": "Compute HPLC column volume (Vm), recommended injection volume for isocratic/gradient runs, mobile phase per run, and t0.",
+    "mainEntity": {
+      "@type": "TechArticle",
+      "headline": "HPLC Volume Calculator & Complete Guide",
+      "about": ["HPLC", "Chromatography", "Column Volume", "Injection Volume"],
+      "author": {"@type": "Organization", "name": "Your Lab Name"},
+      "datePublished": "2025-08-14",
+      "proficiencyLevel": "Expert"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {"@type": "Question", "name": "How do I estimate HPLC column (void) volume?", "acceptedAnswer": {"@type": "Answer", "text": "Use Vm = π × (ID/2)^2 × L × ε, where ID and L are in cm and ε≈0.68 for packed columns."}},
+      {"@type": "Question", "name": "What injection volume is safe?", "acceptedAnswer": {"@type": "Answer", "text": "Isocratic: ≤10% of Vm; Gradient: ≤2% of Vm is a common rule of thumb. Adjust for sample solvent strength."}},
+      {"@type": "Question", "name": "How much mobile phase do I need per run?", "acceptedAnswer": {"@type": "Answer", "text": "Multiply flow rate (mL/min) by run time (min). Add extra for equilibration and priming as needed."}}
+    ]
+  }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge" aria-label="Free tool">FREE TOOL • No sign‑up</span>
+      <h1>HPLC Volume Calculator</h1>
+      <p class="subhead">Compute <strong>column (void) volume, Vm</strong>, recommended <strong>injection volume</strong> for isocratic/gradient runs, <strong>mobile phase per run</strong>, and <strong>dead time t₀</strong> — with an in‑depth guide and FAQs for chromatography best practices.</p>
+    </header>
+
+    <section class="grid" aria-label="Calculator and results">
+      <div class="card" role="region" aria-labelledby="calc-title">
+        <h2 id="calc-title">Calculator</h2>
+        <form id="calc" autocomplete="on">
+          <div class="row">
+            <div class="field">
+              <label for="id_mm">Column ID (mm)</label>
+              <input type="number" id="id_mm" name="id_mm" inputmode="decimal" step="0.01" min="0.5" placeholder="e.g., 4.6" value="4.6" required aria-describedby="id_hint" />
+              <div id="id_hint" class="hint">Internal diameter of column</div>
+            </div>
+            <div class="field">
+              <label for="len_mm">Column Length (mm)</label>
+              <input type="number" id="len_mm" name="len_mm" inputmode="decimal" step="0.1" min="10" placeholder="e.g., 150" value="150" required aria-describedby="len_hint" />
+              <div id="len_hint" class="hint">Packed length (e.g., 50, 100, 150 mm)</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="porosity">Porosity, ε (0–1)</label>
+              <input type="number" id="porosity" name="porosity" inputmode="decimal" step="0.01" min="0.40" max="0.90" value="0.68" required aria-describedby="por_hint" />
+              <div id="por_hint" class="hint">Typical packed-bed interstitial porosity ≈ 0.68</div>
+            </div>
+            <div class="field">
+              <label for="flow">Flow Rate (mL/min)</label>
+              <input type="number" id="flow" name="flow" inputmode="decimal" step="0.01" min="0.01" value="1.00" required />
+            </div>
+          </div>
+          <div class="row">
+            <div class="field">
+              <label for="runtime">Run Time (min)</label>
+              <input type="number" id="runtime" name="runtime" inputmode="decimal" step="0.1" min="1" value="30" required />
+            </div>
+            <div class="field">
+              <label for="mode">Run Mode</label>
+              <select id="mode" name="mode" aria-label="Chromatography mode">
+                <option value="isocratic">Isocratic</option>
+                <option value="gradient" selected>Gradient</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button type="button" class="btn" id="compute">Compute</button>
+            <button type="reset" class="btn secondary" id="reset">Reset</button>
+            <button type="button" class="btn secondary" id="copy">Copy results</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card" role="region" aria-labelledby="results-title">
+        <h2 id="results-title">Results</h2>
+        <div class="out" id="out">
+          <div class="metric"><div><div class="k">Column volume (Vm)</div><div class="hint">Internal/void volume of packed bed</div></div><div class="v" id="vm">—</div></div>
+          <div class="metric"><div><div class="k">Dead time, t₀</div><div class="hint">t₀ = Vm / Flow</div></div><div class="v" id="t0">—</div></div>
+          <div class="metric"><div><div class="k">Recommended max injection</div><div class="hint">Isocratic ≤10% Vm; Gradient ≤2% Vm</div></div><div class="v" id="vinj">—</div></div>
+          <div class="metric"><div><div class="k">Mobile phase per run</div><div class="hint">Flow × Run time</div></div><div class="v" id="mp">—</div></div>
+          <div class="notice" id="advice">Enter values and click Compute.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="article" aria-label="In-depth article">
+      <h2>HPLC Volume Calculator: Deep Dive & Best Practices</h2>
+      <p>
+        In high‑performance liquid chromatography (HPLC), getting volumes right improves peak shape, sensitivity, and robustness. This page provides an accurate calculator for <strong>column (void) volume, Vm</strong>, the derived <strong>dead time, t₀</strong>, recommended <strong>injection volume limits</strong> for isocratic vs. gradient runs, and the <strong>mobile phase consumed per run</strong>. Below, we explain the formulas, assumptions, and lab tips.
+      </p>
+
+      <h3>1) Column (Void) Volume, Vm</h3>
+      <p>
+        The packed‑bed internal volume is commonly estimated by:
+      </p>
+      <p><code>Vm = π × (ID/2)^2 × L × ε</code></p>
+      <ul>
+        <li><strong>ID</strong>: internal diameter (cm)</li>
+        <li><strong>L</strong>: column length (cm)</li>
+        <li><strong>ε</strong>: interstitial porosity (typical ~0.68 for fully porous 3–5 μm media)</li>
+      </ul>
+      <p>
+        Note that <em>Vm</em> excludes the solid particle volume. Manufacturer datasheets sometimes list <em>geometric volume</em> (ε = 1). Use ε appropriate to your column chemistry and particle morphology if available.
+      </p>
+
+      <h3>2) Dead Time (t₀)</h3>
+      <p>
+        The dead time is the time a non‑retained species takes to traverse the column: <code>t₀ = Vm / Flow</code>. An accurate t₀ helps compute capacity factors k′ and check system dwell volume.
+      </p>
+
+      <h3>3) Injection Volume Guidelines</h3>
+      <p>
+        Large injections can cause fronting and band broadening, especially in gradients and when the sample solvent is stronger than the initial mobile phase. Practical limits:
+      </p>
+      <ul>
+        <li><strong>Isocratic:</strong> ≤ <strong>10%</strong> of Vm</li>
+        <li><strong>Gradient:</strong> ≤ <strong>2%</strong> of Vm</li>
+      </ul>
+      <p>
+        These are conservative rules of thumb. If sensitivity is limiting, you can inject more when using <em>weak</em> diluent (≤ initial %B), on‑column focusing, or larger‑ID columns.
+      </p>
+
+      <h3>4) Mobile Phase Per Run</h3>
+      <p>
+        Estimate solvent consumption as <code>Flow (mL/min) × Run time (min)</code>. Remember to include equilibration and priming volumes in your batch planning.
+      </p>
+
+      <h3>Worked Example</h3>
+      <p>
+        For a 4.6 × 150 mm column, ε = 0.68, Flow = 1.00 mL/min, Run = 30 min:
+      </p>
+      <ul>
+        <li>Vm ≈ 3.4 mL</li>
+        <li>t₀ ≈ 3.4 min</li>
+        <li>Max injection: Isocratic ≤ 340 μL; Gradient ≤ 68 μL</li>
+        <li>Mobile phase per run: 30 mL</li>
+      </ul>
+
+      <h3>Practical Tips for Better Chromatography</h3>
+      <ul>
+        <li>Match sample solvent strength to initial mobile phase to improve on‑column focusing.</li>
+        <li>Use partial‑loop injections or smaller loops for narrow‑bore columns (e.g., 2.1 mm ID).</li>
+        <li>Check system dwell volume and add to gradient time when transferring methods.</li>
+        <li>Account for extra‑column volume (tubing, fittings, detector cell) when optimizing efficiency.</li>
+        <li>For core‑shell particles, ε may differ slightly; consult the vendor for best estimates.</li>
+      </ul>
+
+      <h3>FAQs</h3>
+      <details>
+        <summary>What porosity should I use?</summary>
+        <p>If the datasheet doesn’t specify, ε = 0.68 is a reasonable estimate for many packed columns with fully porous particles. Monolithic or core‑shell columns may vary.</p>
+      </details>
+      <details>
+        <summary>Why are injection limits lower for gradients?</summary>
+        <p>During a gradient, solvent strength increases over time, reducing focusing at the head of the column. Large injection plugs broaden peaks and may distort early eluters.</p>
+      </details>
+      <details>
+        <summary>How do I scale injection volume between column sizes?</summary>
+        <p>Scale roughly with <em>column volume</em> or with the square of ID at constant length (since Vm ∝ ID² × L).</p>
+      </details>
+
+      <h3>References & Further Reading</h3>
+      <p>Consult your specific column’s technical note for exact bed porosity and recommended injection practices. General chromatography texts cover Vm, t₀, and scaling rules in detail.</p>
+    </section>
+
+    <footer>
+      © <span id="yr"></span> Your Lab Name • Educational use only
+    </footer>
+  </div>
+
+  <script>
+    (function(){
+      const $ = (id) => document.getElementById(id);
+      const fmt = (x, unit) => isFinite(x) ? `${x.toLocaleString(undefined, {maximumFractionDigits: 3})} ${unit}` : '—';
+
+      function compute(){
+        const id_mm = parseFloat($("id_mm").value);
+        const len_mm = parseFloat($("len_mm").value);
+        const eps = parseFloat($("porosity").value);
+        const flow = parseFloat($("flow").value); // mL/min
+        const runtime = parseFloat($("runtime").value); // min
+        const mode = $("mode").value; // iso/gradient
+
+        if([id_mm, len_mm, eps, flow, runtime].some(v => !isFinite(v) || v <= 0)){
+          $("advice").textContent = "Please enter valid positive numbers for all fields.";
+          return;
+        }
+        if(eps <= 0 || eps >= 1){
+          $("advice").innerHTML = 'Porosity ε should be between 0 and 1 (e.g., <span class="ok">0.68</span>).';
+          return;
+        }
+
+        // Convert mm -> cm
+        const id_cm = id_mm / 10;
+        const len_cm = len_mm / 10;
+
+        // Vm in mL: π * (ID/2)^2 * L * ε ; all in cm; 1 cm^3 = 1 mL
+        const vm = Math.PI * Math.pow(id_cm/2, 2) * len_cm * eps; // mL
+
+        // Dead time t0 in minutes
+        const t0 = vm / flow; // min
+
+        // Recommended inj volume
+        const frac = (mode === 'isocratic') ? 0.10 : 0.02;
+        const vinj_mL = vm * frac; // mL
+        const vinj_uL = vinj_mL * 1000; // μL
+
+        // Mobile phase per run
+        const mp = flow * runtime; // mL
+
+        $("vm").textContent = fmt(vm, 'mL');
+        $("t0").textContent = fmt(t0, 'min');
+        $("vinj").textContent = `${fmt(vinj_uL, 'μL')} (${(frac*100).toFixed(0)}% of Vm)`;
+        $("mp").textContent = fmt(mp, 'mL');
+
+        // Advice text
+        const smallID = id_mm <= 2.1;
+        const modeText = mode === 'isocratic' ? 'isocratic' : 'gradient';
+        const tip = smallID
+          ? 'Narrow‑bore column detected — consider smaller loops and weak diluent for sharper peaks.'
+          : 'For best focusing, match sample diluent to initial mobile phase or weaker.';
+        $("advice").innerHTML = `Computed values for a <strong>${id_mm} × ${len_mm} mm</strong> column in <strong>${modeText}</strong> mode. ${tip}`;
+      }
+
+      function copyResults(){
+        const text = `HPLC Volume Calculator Results\n` +
+          `Column ID: ${$("id_mm").value} mm\n` +
+          `Column Length: ${$("len_mm").value} mm\n` +
+          `Porosity (ε): ${$("porosity").value}\n` +
+          `Flow: ${$("flow").value} mL/min\n` +
+          `Run time: ${$("runtime").value} min\n` +
+          `Mode: ${$("mode").value}\n\n` +
+          `Vm: ${$("vm").textContent}\n` +
+          `t0: ${$("t0").textContent}\n` +
+          `Recommended max injection: ${$("vinj").textContent}\n` +
+          `Mobile phase per run: ${$("mp").textContent}`;
+        navigator.clipboard.writeText(text).then(()=>{
+          $("advice").innerHTML = '<span class="ok">Results copied to clipboard.</span>';
+        }).catch(()=>{
+          $("advice").innerHTML = '<span class="warn">Copy failed. Select text and copy manually.</span>';
+        });
+      }
+
+      $("compute").addEventListener('click', compute);
+      $("reset").addEventListener('click', () => { setTimeout(()=>{$("advice").textContent='Enter values and click Compute.'; $("vm").textContent='—'; $("t0").textContent='—'; $("vinj").textContent='—'; $("mp").textContent='—'; }, 0); });
+      $("copy").addEventListener('click', copyResults);
+
+      // Auto-compute on first load with defaults
+      compute();
+      $("yr").textContent = new Date().getFullYear();
+    })();
+  </script>
+</body>
+</html>
